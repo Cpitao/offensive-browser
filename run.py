@@ -1,3 +1,4 @@
+#!/bin/python3
 from chrome.browser import ChromeBrowser
 from console.console import Console
 
