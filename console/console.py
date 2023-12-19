@@ -34,19 +34,42 @@ class Console:
     
     def _print_cookies(self, cookie_names: List[str]) -> None:
         cookies = self.controller.get_cookies()
+
+        
         table = PrettyTable()
         table.field_names = ["Name", "Value", "Domain", "Path", "HttpOnly", "SameSite", "Secure", "Expires"]
+        if cookie_names:
+            for cookie in cookies:
+                if cookie['name'] in cookie_names:
+                    value_display = cookie['value']
+                    http_only_display = (Fore.GREEN if cookie['httpOnly'] else Fore.RED) + str(cookie['httpOnly']) + Style.RESET_ALL
+                    same_site_display = (Fore.GREEN if cookie['sameSite'] == "Strict" else Fore.YELLOW if cookie['sameSite'] == "Lax" else Fore.RED) \
+                        + cookie['sameSite'] + Style.RESET_ALL
+                    print()
+                    print("Name:", cookie['name'])
+                    print("Value:", value_display)
+                    print("Domain:", cookie['domain'])
+                    print("Path:", cookie['path'])
+                    print("HttpOnly:", http_only_display)
+                    print("SameSite:", same_site_display)
+                    print("Secure:", cookie['secure'])
+                    print("Expiry:", cookie.get('expiry', '-'))
+            return
+
+                
+        
         for cookie in cookies:
-            if cookie_names and cookie['name'] not in cookie_names:
-                continue
             value_display = cookie['value'] if len(cookie['value']) <= 25 else cookie['value'][:22] + '...'
+            http_only_display = (Fore.GREEN if cookie['httpOnly'] else Fore.RED) + str(cookie['httpOnly']) + Style.RESET_ALL
+            same_site_display = (Fore.GREEN if cookie['sameSite'] == "Strict" else Fore.YELLOW if cookie['sameSite'] == "Lax" else Fore.RED) \
+                + cookie['sameSite'] + Style.RESET_ALL
             table.add_row([
                             cookie['name'],
                             value_display,
                             cookie['domain'],
                             cookie['path'],
-                            cookie['httpOnly'],
-                            cookie['sameSite'],
+                            http_only_display,
+                            same_site_display,
                             cookie['secure'],
                             cookie.get('expiry', '-')
                         ])
