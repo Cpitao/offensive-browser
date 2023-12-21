@@ -22,6 +22,8 @@ class Console:
         match RegexEqual(inp):
             case "[c|(cookies)]( .*)?":
                 self._print_cookies(Console._parse_cookie_names(inp))
+            case "[(cs)|(cookieset) .*]":
+                self._set_cookie(Console._parse_set_cookie(inp))
             case "quit" | "exit":
                 print("Bye")
                 self.running = False
@@ -31,6 +33,14 @@ class Console:
     def _parse_cookie_names(inp: str):
         names = inp.split()[1:]
         return names
+    
+    def _parse_set_cookie(inp: str):
+        attr, value = inp.split()[1:]
+        return attr, value
+    
+    def _set_cookie(self, attr, value):
+        pass
+        
     
     def _print_cookies(self, cookie_names: List[str]) -> None:
         cookies = self.controller.get_cookies()
