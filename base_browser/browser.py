@@ -8,10 +8,10 @@ from abc import ABC, abstractmethod
 
 class BaseBrowser(ABC):
 
-    def __init__(self, proxy: str = "127.0.0.1:8080"):
+    def __init__(self, proxy: str = "127.0.0.1:8080", **kwargs):
         self.browser = None
         self.proxy = proxy
-        self.set_options(proxy=proxy)
+        self.set_options(proxy=proxy, **kwargs)
         self.start()
         self.wait_for_proxy()
         if config.DEFAULT_PAGE is not None:

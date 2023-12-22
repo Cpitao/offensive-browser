@@ -19,14 +19,18 @@ class Console:
             self.handle_input(input('> '))
     
     def handle_input(self, inp: str) -> None:
-        match RegexEqual(inp):
-            case "[c|(cookie)]( .*)?":
-                CookieParser(controller=self.controller).parse_cookie_command(inp)
-            case "quit" | "exit":
-                print("Bye")
-                self.running = False
-            case _:
-                print("Invalid action")
+        try:
+            match RegexEqual(inp):
+                case "[c|(cookie)]( .*)?":
+                    CookieParser(controller=self.controller).parse_cookie_command(inp)
+                case "quit" | "exit":
+                    print("Bye")
+                    self.running = False
+                case _:
+                    print("Invalid action")
+        except Exception as e:
+            print("Error running command. Check syntax and try again")
+            print(e)
 
 
 class CookieParser:
