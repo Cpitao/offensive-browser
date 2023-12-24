@@ -42,5 +42,5 @@ class ChromeBrowser(BaseBrowser):
             return False
         
         from os import system
-        return system("sudo apt install chromium") == 0
+        return system("sudo apt install chromium -y") == 0
         
