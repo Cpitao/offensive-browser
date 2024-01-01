@@ -1,4 +1,5 @@
 from base_browser.browser import BaseBrowser
+from console.parsers.context_parser import ContextParser
 from controller.controller import Controller
 from console.parsers.cookie_parser import CookieParser
 
@@ -21,7 +22,9 @@ class Console:
         try:
             match RegexEqual(inp):
                 case "[c|(cookie)]( .*)?":
-                    CookieParser(controller=self.controller).parse_cookie_command(inp)
+                    CookieParser(controller=self.controller).parse_command(inp)
+                case "ctx( .*)?":
+                    ContextParser(controller=self.controller).parse_command(inp)
                 case "quit" | "exit":
                     print("Bye")
                     self.running = False
@@ -34,4 +37,4 @@ class Console:
 
 class RegexEqual(str):
     def __eq__(self, pattern):
-        return bool(re.match(pattern, self))
+        return bool(re.fullmatch(pattern, self))

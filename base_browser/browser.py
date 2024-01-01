@@ -17,15 +17,26 @@ class BaseBrowser(ABC):
         self.running = True
         self.browser = None
         self.proxy = proxy
-        self.cookie_contexts = Contexts()
+        self.cookie_contexts = Contexts(self)
         self.set_options(proxy=proxy, **kwargs)
         self.start()
         self.wait_for_proxy()
         if config.DEFAULT_PAGE is not None:
             self.browser.get(config.DEFAULT_PAGE)
 
-        self.handler_thread = threading.Thread(target=self.wait_for_condition)
-        self.handler_thread.start()
+        self.register_handlers()
+        self.start_handlers()
+
+    def register_handlers(self):
+        self.handlers = [threading.Thread(target=self.cookie_change_handler)]
+    
+    def start_handlers(self):
+        for handler in self.handlers:
+            handler.start()
+
+    def stop_handlers(self):
+        for handler in self.handlers:
+            handler.join()
 
     def wait_for_proxy(self):
         if self.proxy is None:
@@ -48,7 +59,7 @@ class BaseBrowser(ABC):
     
     def stop(self) -> None:
         self.running = False
-        self.handler_thread.join()
+        self.stop_handlers()
         self.browser.close()
     
     @abstractmethod
@@ -59,12 +70,29 @@ class BaseBrowser(ABC):
     def set_options(self, **kwargs) -> None:
         pass
 
-    def wait_for_condition(self):
+    def cookie_change_handler(self):
         while self.running:
-            WebDriverWait(self.browser, timeout=3600).until(EC.url_changes(self.__previous_url))
-            self.handle_event(self.browser)
+            new_cookies = WebDriverWait(self.browser, timeout=3600).until(CookieChanged(self.browser.get_cookies()))
+            if new_cookies:
+                self.cookie_contexts.update_cookies(new_cookies)
 
-    def handle_event(self, browser) -> None:
-        self.__previous_url = browser.current_url
-        print(browser.current_url)
-        # TODO save cookies before changing the URL
+    def get_all_cookies(self):
+        return self.cookie_contexts.get_cookies()
+    
+    def roll_cookies(self, cookies):
+        print("Rolling cookies")
+        self.browser.delete_all_cookies()
+        for c in cookies:
+            self.browser.add_cookie(c)
+    
+
+class CookieChanged(object):
+    def __init__(self, cookies):
+        self.cookies = cookies
+
+    def __call__(self, driver):
+        new_cookies = driver.get_cookies()
+        for c in new_cookies:
+            if c not in self.cookies:
+                return new_cookies
+        return False

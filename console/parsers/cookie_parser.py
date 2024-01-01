@@ -6,6 +6,7 @@ class CookieParser:
 
     _commands = {
         "show": "_print_cookies",
+        "all": "_print_all_cookies",
         "set": "_set_cookie",
         "help": "_print_help"
     }
@@ -13,14 +14,14 @@ class CookieParser:
     def __init__(self, controller):
         self.controller = controller
 
-    def parse_cookie_command(self, inp: str) -> None:
+    def parse_command(self, inp: str) -> None:
         inp = inp.split()
         if len(inp) == 1:
-            self._print_cookies()
+            self._print_cookies(self.controller.get_cookies())
             return
         
         if inp[1] not in CookieParser._commands:
-            self._print_cookies(*inp[1:])
+            self._print_cookies(self.controller.get_cookies(), *inp[1:])
             return
 
         getattr(self, CookieParser._commands[inp[1]])(*inp[2:])
@@ -29,10 +30,13 @@ class CookieParser:
         """Set cookie property"""
         attr, value = attrProps.split(sep='=')
         CookieParser._print_cookie(self.controller.set_cookie(name, attr, value))
+    
+    def _print_all_cookies(self) -> None:
+        """Print all cookies for all domains"""
+        self._print_cookies(self.controller.get_all_cookies())
         
-    def _print_cookies(self, *cookie_names: str) -> None:
-        """Print all or selected cookie values"""
-        cookies = self.controller.get_cookies()
+    def _print_cookies(self, cookies, *cookie_names: str) -> None:
+        """Print all or selected cookies for current domain"""
 
         table = PrettyTable()
         table.field_names = ["Name", "Value", "Domain", "Path", "HttpOnly", "SameSite", "Secure", "Expires"]
